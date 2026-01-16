@@ -11,6 +11,9 @@
 #define jb 27 //GPIOP27
 #define lb 2 //GIOP2
 #define rb 15 //GIOP15
+#define mode 0
+
+int state = 0;
 
 #define report_hz 100
 #define report_ms 1000/report_hz
@@ -41,13 +44,10 @@ bool button_update(button &b, uint32_t now) {
     b.stable = b.lastRead;
   }
 
-  // Serial.print("left ");
-  // Serial.print(left_button);
-  // Serial.print(" middle ");
-  // Serial.print(mid_button);
-  // Serial.print(" right ");
-  // Serial.println(right_button);
-  // Serial.println();
+  if (b.pin == mode && b.stable) {
+    if (state == 1) mpu_wake(); else mpu_sleep();
+  }
+
   return b.stable;
 }
 
@@ -60,6 +60,7 @@ void setup() {
   pinMode(jb, INPUT_PULLUP);
   pinMode(lb, INPUT_PULLUP);
   pinMode(rb, INPUT_PULLUP);
+  pinMode(mode, INPUT_PULLUP);
 
   joy_setup();
 
@@ -73,6 +74,7 @@ uint32_t last_report_ms = 0;
 button left{lb, false, false, 0};
 button right{rb, false, false, 0};
 button joy{jb, false, false, 0};
+button mode_control{mode, false, false, 0};
 
 void loop() {
   // put your main code here, to run repeatedly:
@@ -93,6 +95,9 @@ void loop() {
   bool left_button = button_update(left, now);
   bool right_button = button_update(right, now);
   bool joy_button = button_update(joy, now);
+  bool mode_button = button_update(mode_control, now);
+
+  if (mode_button) state ^= 1;
 
   left_button = left_button || joy_button;
   read_joy();
@@ -105,9 +110,21 @@ void loop() {
   if (right_button && !mid_button) bleMouse.press(MOUSE_RIGHT); else bleMouse.release(MOUSE_RIGHT);
   if (mid_button) bleMouse.press(MOUSE_MIDDLE); else bleMouse.release(MOUSE_MIDDLE);
 
-  if (dx != 0 || dy != 0 || joy_y != 0 || joy_x != 0){
-    bleMouse.move(dx, dy, -joy_y/2);
-    //bleMouse.move(joy_x, joy_y, 0);
-    //Serial.print("REPORT SENT");
+  // Serial.print("left ");
+  // Serial.print(left_button);
+  // Serial.print(" middle ");
+  // Serial.print(mid_button);
+  // Serial.print(" right ");
+  // Serial.println(right_button);
+  // Serial.println();
+  Serial.print(mode_button); Serial.print("  "); Serial.println(state);
+  
+  if (state == 0) {
+    bleMouse.move(2*joy_x, 2*joy_y, 0);
   }
+  else {
+    bleMouse.move(dx, dy, joy_y);
+  }  
+  //Serial.print("REPORT SENT");
+  
 }

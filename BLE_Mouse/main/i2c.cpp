@@ -10,11 +10,26 @@ double gx, gy, gz;
 
 double gyro_x;
 double gyro_y;
+double gyro_z;
 
-int dx, dy;
+int dx, dy, dz;
 
 Adafruit_MPU6050 mpu;
 
+void mpu_sleep() {
+  Wire.beginTransmission(0x68);
+  Wire.write(0x6B);        // PWR_MGMT_1
+  Wire.write(0x40);       // Set SLEEP bit (bit 6)
+  Wire.endTransmission();
+}
+
+void mpu_wake() {
+  Wire.beginTransmission(0x68);
+  Wire.write(0x6B);
+  Wire.write(0x00);       // Clear SLEEP bit
+  Wire.endTransmission();
+  delay(50);              // let it stabilize
+}
 
 int clamp_mpu(int v){
   if (v < low_mpu) return low_mpu;
@@ -99,17 +114,21 @@ void read_mpu(){
 
   gyro_x = gyro_alpha*gyro_x + (1.0 - gyro_alpha)*gx;
   gyro_y = gyro_alpha*gyro_y + (1.0 - gyro_alpha)*gy;
+  gyro_z = gyro_alpha*gyro_z + (1.0 - gyro_alpha)*gz;
 
-  double fx, fy;
+  double fx, fy, fz;
   fx = deadzone_mpu(gyro_x);
   fy = deadzone_mpu(gyro_y);
 
   dx = (int)(fy * sens_gyro_x);
   dy = (int)(fx * sens_gyro_y);
+  dz = (int)(fz * sens_gyro_z);
+
   // dx = (int)(fy);
   // dy = (int)(-fx);
   dx = clamp_mpu(dx);
   dy = clamp_mpu(dy);
+  dz = clamp_mpu(dy);
 
   // Serial.print("Gyro x ");
   // Serial.print(dx);
