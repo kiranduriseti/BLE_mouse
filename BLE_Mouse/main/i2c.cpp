@@ -17,8 +17,8 @@ Adafruit_MPU6050 mpu;
 
 
 int clamp_mpu(int v){
-  if (v < low_mpu) v = low_mpu;
-  if (v > high_mpu) v = high_mpu;
+  if (v < low_mpu) return low_mpu;
+  if (v > high_mpu) return high_mpu;
 
   return v;
 }
@@ -105,7 +105,9 @@ void read_mpu(){
   fy = deadzone_mpu(gyro_y);
 
   dx = (int)(fy * sens_gyro_x);
-  dy = (int)(-fx * sens_gyro_y);
+  dy = (int)(fx * sens_gyro_y);
+  // dx = (int)(fy);
+  // dy = (int)(-fx);
   dx = clamp_mpu(dx);
   dy = clamp_mpu(dy);
 

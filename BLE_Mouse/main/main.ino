@@ -96,7 +96,7 @@ void loop() {
 
   left_button = left_button || joy_button;
   read_joy();
-  //read_mpu();
+  read_mpu();
   
   bool mid_button = false;
   if (left_button && right_button) mid_button = true;
@@ -106,8 +106,8 @@ void loop() {
   if (mid_button) bleMouse.press(MOUSE_MIDDLE); else bleMouse.release(MOUSE_MIDDLE);
 
   if (dx != 0 || dy != 0 || joy_y != 0 || joy_x != 0){
-    //bleMouse.move(dx, dy, joy_y);
-    bleMouse.move(joy_x, joy_y, 0);
+    bleMouse.move(dx, dy, -joy_y/2);
+    //bleMouse.move(joy_x, joy_y, 0);
     //Serial.print("REPORT SENT");
   }
 }

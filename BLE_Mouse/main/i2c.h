@@ -5,8 +5,8 @@ void mpu_setup();
 void read_mpu();
 
 #define deadzone_gyro 2.0
-#define sens_gyro_x .18
-#define sens_gyro_y .18
+#define sens_gyro_x .3
+#define sens_gyro_y .2
 #define gyro_alpha .85
 
 extern double gyro_bias_x, gyro_bias_y, gyro_bias_z;
