@@ -5,14 +5,14 @@
 #define sens_joy 700
 #define max_joy 6
 
-#define vx 3
-#define vy 4
+#define vx 36
+#define vy 39
 
-int joy_center_x;
-int joy_center_y;
+extern int joy_center_x;
+extern int joy_center_y;
 
-int joy_x;
-int joy_y;
+extern int joy_x;
+extern int joy_y;
 
 
 void read_joy();

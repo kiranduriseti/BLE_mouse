@@ -3,14 +3,14 @@
 #include <BleMouse.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
-#include <i2c.h>
-#include <joystick.h>
+#include <Wire.h>
+#include "i2c.h"
+#include "joystick.h"
 #include <math.h>
 
-#define LED 2
-#define jb 5
-#define lb 24
-#define rb 25
+#define jb 27 //GPIOP27
+#define lb 2 //GIOP2
+#define rb 15 //GIOP15
 
 #define report_hz 100
 #define report_ms 1000/report_hz
@@ -40,33 +40,32 @@ bool button_update(button &b, uint32_t now) {
   if((now - b.lastChange) > debounce_ms) {
     b.stable = b.lastRead;
   }
-  return b.stable;
-}
 
-void flash_complete(){
-  digitalWrite(LED, HIGH);
-  Serial.println("LED is on");
-  Serial.println("BLE Starting ...");
-  delay(1000);
-  // digitalWrite(LED, LOW);
-  // Serial.println("LED is off");
-  // delay(1000);
+  // Serial.print("left ");
+  // Serial.print(left_button);
+  // Serial.print(" middle ");
+  // Serial.print(mid_button);
+  // Serial.print(" right ");
+  // Serial.println(right_button);
+  // Serial.println();
+  return b.stable;
 }
 
 void setup() {
   // put your setup code here, to run once:
+  delay(2000);
   Serial.begin(9600);
-  pinMode(LED, OUTPUT);
-  flash_complete();
+  delay(1000);
 
   pinMode(jb, INPUT_PULLUP);
   pinMode(lb, INPUT_PULLUP);
-  pinMode(jb, INPUT_PULLUP);
+  pinMode(rb, INPUT_PULLUP);
 
   joy_setup();
 
   mpu_setup();
 
+  bleMouse.begin();
 }
 
 uint32_t last_report_ms = 0;
@@ -80,28 +79,35 @@ void loop() {
   uint32_t now = millis();
 
   if(!bleMouse.isConnected()) {
-    Serial.println("Not connected");
+    //Serial.println("Not connected");
+    //delay(2000);
     return;
   }
 
-  if (now - last_report_ms) return;
+  //Serial.println("BLE mouse connected");
+
+  if (now - last_report_ms < report_ms) return;
+
   last_report_ms = now;
 
   bool left_button = button_update(left, now);
   bool right_button = button_update(right, now);
   bool joy_button = button_update(joy, now);
 
+  left_button = left_button || joy_button;
   read_joy();
-  read_mpu();
+  //read_mpu();
+  
   bool mid_button = false;
   if (left_button && right_button) mid_button = true;
 
-  if (left_button) bleMouse.press(MOUSE_LEFT); else bleMouse.release(MOUSE_LEFT);
-  if (right_button) bleMouse.press(MOUSE_RIGHT); else bleMouse.release(MOUSE_RIGHT);
-  if (joy_button) bleMouse.press(MOUSE_LEFT); else bleMouse.release(MOUSE_LEFT);  
+  if (left_button && !mid_button) bleMouse.press(MOUSE_LEFT); else bleMouse.release(MOUSE_LEFT);  
+  if (right_button && !mid_button) bleMouse.press(MOUSE_RIGHT); else bleMouse.release(MOUSE_RIGHT);
   if (mid_button) bleMouse.press(MOUSE_MIDDLE); else bleMouse.release(MOUSE_MIDDLE);
 
-  if (dx != 0 || dy != 0 || joy_y != 0){
-    bleMouse.move(dx, dy, joy_y);
+  if (dx != 0 || dy != 0 || joy_y != 0 || joy_x != 0){
+    //bleMouse.move(dx, dy, joy_y);
+    bleMouse.move(joy_x, joy_y, 0);
+    //Serial.print("REPORT SENT");
   }
 }
