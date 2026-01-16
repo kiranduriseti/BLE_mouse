@@ -1,0 +1,40 @@
+# Arduino IDE and build artifacts
+*.ino.hex
+*.ino.eep
+*.ino.bin
+*.ardrino.bin
+*.elf
+*.map
+*.lst
+*.sym
+*.epp
+*.o
+*.d
+*.gcno
+*.gcda
+*.gcov
+*build*
+build/
+.builds/
+
+# Temporary and backup files
+*~
+*.tmp
+*.log
+*.swp
+.DS_Store # macOS specific
+*.cache
+ipch/ # Visual Studio specific
+*.aps # Visual Studio specific
+*.ncb # Visual Studio specific
+*.opensdf # Visual Studio specific
+*.sdf # Visual Studio specific
+_vm/ # Visual Micro specific
+
+# IDE specific files
+.vscode/
+.idea/
+*.suo
+*.user
+*.config
+# If using PlatformIO, you might also want to ignore its specific directories like .pio/
