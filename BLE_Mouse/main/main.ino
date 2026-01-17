@@ -79,7 +79,7 @@ void loop() {
 
   if(!bleMouse.isConnected()) {
     //Serial.println("Not connected");
-    //delay(2000);
+    delay(20);
     return;
   }
 
@@ -94,18 +94,24 @@ void loop() {
   bool joy_button = button_update(joy, now);
   bool mode_button = button_update(mode_control, now);
 
-  if (now - last_state > 20 && mode_button) {
+  if (now - last_state > 200 && mode_button) {
     last_state = now;
     state ^= 1;
     if (state == 1) mpu_wake(); else mpu_sleep();
   }
-  left_button = left_button || joy_button;
+  //left_button = left_button || joy_button;
   read_joy();
   read_mpu();
   
   bool mid_button = false;
   if (left_button && right_button) mid_button = true;
 
+  if (state == 1){
+    mid_button = joy_button | mid_button;
+  }
+  else if (state == 0) {
+    left_button = left_button | joy_button;
+  }
   if (left_button && !mid_button) bleMouse.press(MOUSE_LEFT); else bleMouse.release(MOUSE_LEFT);  
   if (right_button && !mid_button) bleMouse.press(MOUSE_RIGHT); else bleMouse.release(MOUSE_RIGHT);
   if (mid_button) bleMouse.press(MOUSE_MIDDLE); else bleMouse.release(MOUSE_MIDDLE);
@@ -120,10 +126,10 @@ void loop() {
   // Serial.print(mode_button); Serial.print("  "); Serial.println(state);
   
   if (state == 0) {
-    bleMouse.move(2*joy_x, 2*joy_y, 0);
+    bleMouse.move(joy_x, joy_y, 0);
   }
   else {
-    bleMouse.move(dx, dy, -joy_y/2);
+    bleMouse.move(dx, dy, joy_y/3);
   }  
   //Serial.print("REPORT SENT");
   
