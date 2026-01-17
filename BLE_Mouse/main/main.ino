@@ -123,7 +123,7 @@ void loop() {
     bleMouse.move(2*joy_x, 2*joy_y, 0);
   }
   else {
-    bleMouse.move(dx, dy, -joy_y);
+    bleMouse.move(dx, dy, -joy_y/2);
   }  
   //Serial.print("REPORT SENT");
   
