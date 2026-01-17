@@ -11,9 +11,10 @@
 #define jb 27 //GPIOP27
 #define lb 2 //GIOP2
 #define rb 15 //GIOP15
-#define mode 0
+#define mode 13
 
 int state = 0;
+uint32_t last_state = 0;
 
 #define report_hz 100
 #define report_ms 1000/report_hz
@@ -42,10 +43,6 @@ bool button_update(button &b, uint32_t now) {
 
   if((now - b.lastChange) > debounce_ms) {
     b.stable = b.lastRead;
-  }
-
-  if (b.pin == mode && b.stable) {
-    if (state == 1) mpu_wake(); else mpu_sleep();
   }
 
   return b.stable;
@@ -97,8 +94,11 @@ void loop() {
   bool joy_button = button_update(joy, now);
   bool mode_button = button_update(mode_control, now);
 
-  if (mode_button) state ^= 1;
-
+  if (now - last_state > 20 && mode_button) {
+    last_state = now;
+    state ^= 1;
+    if (state == 1) mpu_wake(); else mpu_sleep();
+  }
   left_button = left_button || joy_button;
   read_joy();
   read_mpu();
@@ -117,13 +117,13 @@ void loop() {
   // Serial.print(" right ");
   // Serial.println(right_button);
   // Serial.println();
-  Serial.print(mode_button); Serial.print("  "); Serial.println(state);
+  // Serial.print(mode_button); Serial.print("  "); Serial.println(state);
   
   if (state == 0) {
     bleMouse.move(2*joy_x, 2*joy_y, 0);
   }
   else {
-    bleMouse.move(dx, dy, joy_y);
+    bleMouse.move(dx, dy, -joy_y);
   }  
   //Serial.print("REPORT SENT");
   
