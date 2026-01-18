@@ -13,8 +13,12 @@
 #define rb 15 //GIOP15
 #define mode 13
 
+#define wheel_thresh 1500
+#define joy_max 12
 int state = 0;
 uint32_t last_state = 0;
+uint32_t last_wheel = 0;
+#define wheel_update 80
 
 #define report_hz 100
 #define report_ms 1000/report_hz
@@ -34,6 +38,30 @@ bool readPressedRaw(int pin){
   return digitalRead(pin) == LOW;
 }
 
+int8_t clamp_joy_wheel(int v){
+  uint32_t now = millis();
+  if (now - last_wheel < wheel_update){
+    return 0;
+  }
+  if (v >= wheel_thresh) {
+    v = 1;
+  }
+  else if (v <= -wheel_thresh){
+    v = -1;
+  }
+  else{
+    v = 0;
+  }
+  if (v != 0) last_wheel = now;
+  return v;
+}
+
+int8_t clamp_joy(int v){
+  v = v/341;
+  if (v > joy_max) return joy_max;
+  if (v < -joy_max) return -joy_max;
+  return v;
+}
 bool button_update(button &b, uint32_t now) {
   bool pressed = readPressedRaw(b.pin);
   if(pressed != b.lastRead) {
@@ -94,7 +122,7 @@ void loop() {
   bool joy_button = button_update(joy, now);
   bool mode_button = button_update(mode_control, now);
 
-  if (now - last_state > 200 && mode_button) {
+  if (now - last_state > 20 && mode_button) {
     last_state = now;
     state ^= 1;
     if (state == 1) mpu_wake(); else mpu_sleep();
@@ -126,10 +154,11 @@ void loop() {
   // Serial.print(mode_button); Serial.print("  "); Serial.println(state);
   
   if (state == 0) {
-    bleMouse.move(joy_x, joy_y, 0);
+    bleMouse.move(clamp_joy(joy_x), clamp_joy(joy_y), 0);
   }
   else {
-    bleMouse.move(dx, dy, joy_y/3);
+    
+    bleMouse.move(dx, dy, clamp_joy_wheel(joy_y));
   }  
   //Serial.print("REPORT SENT");
   

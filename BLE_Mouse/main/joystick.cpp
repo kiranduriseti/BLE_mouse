@@ -40,10 +40,10 @@ void joy_setup() {
 }
 
 void read_joy(){
-  joy_x = (deadzone(analogRead(vx) - joy_center_x))/341;
-  joy_y = (deadzone(analogRead(vy) - joy_center_y))/341;
-  joy_x = clamp(joy_x);
-  joy_y = clamp(joy_y);
+  joy_x = (deadzone(analogRead(vx) - joy_center_x));
+  joy_y = (deadzone(analogRead(vy) - joy_center_y));
+  // joy_x = clamp(joy_x);
+  // joy_y = clamp(joy_y);
 
   //Serial.printf("RAW rx=%d ry=%d centerx=%d centery=%d\n", joy_x, joy_y, joy_center_x, joy_center_y);
 }
