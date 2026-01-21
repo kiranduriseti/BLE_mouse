@@ -15,7 +15,7 @@
 
 #define wheel_thresh 1500
 #define joy_max 12
-int state = 0;
+int state = 1;
 uint32_t last_state = 0;
 uint32_t last_wheel = 0;
 #define wheel_update 80
